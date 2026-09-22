@@ -14,11 +14,10 @@ const adoptionRoutes = require("./routes/adoptionRoutes");
 
 const app = express();
 
-/*
-  =========================
-  CORS CONFIGURATION
-  =========================
-*/
+
+// ===============================
+// CORS CONFIGURATION
+// ===============================
 
 const allowedOrigins = [
   "https://petadoptationsystem.vercel.app",
@@ -28,8 +27,8 @@ const allowedOrigins = [
 
 const corsOptions = {
   origin: function (origin, callback) {
-    // Allow requests without an origin
-    // Example: Postman / server-to-server requests
+    // Allow requests without an Origin
+    // Example: Postman, server-to-server requests
     if (!origin) {
       return callback(null, true);
     }
@@ -38,9 +37,9 @@ const corsOptions = {
       return callback(null, true);
     }
 
-    return callback(
-      new Error("Not allowed by CORS")
-    );
+    console.log("Blocked CORS origin:", origin);
+
+    return callback(null, false);
   },
 
   methods: [
@@ -56,16 +55,17 @@ const corsOptions = {
     "Authorization"
   ],
 
-  credentials: false
+  optionsSuccessStatus: 204
 };
 
+
+// Apply CORS
 app.use(cors(corsOptions));
 
-/*
-  =========================
-  BODY PARSER
-  =========================
-*/
+
+// ===============================
+// BODY PARSER
+// ===============================
 
 app.use(
   express.json({
@@ -80,19 +80,17 @@ app.use(
   })
 );
 
-/*
-  =========================
-  DATABASE
-  =========================
-*/
+
+// ===============================
+// DATABASE
+// ===============================
 
 connectDB();
 
-/*
-  =========================
-  API ROUTES
-  =========================
-*/
+
+// ===============================
+// API ROUTES
+// ===============================
 
 app.use("/api/auth", authRoutes);
 
@@ -100,11 +98,10 @@ app.use("/api/pets", petRoutes);
 
 app.use("/api/adoptions", adoptionRoutes);
 
-/*
-  =========================
-  ROOT ROUTE
-  =========================
-*/
+
+// ===============================
+// ROOT ROUTE
+// ===============================
 
 app.get("/", (req, res) => {
   res.status(200).json({
@@ -112,11 +109,10 @@ app.get("/", (req, res) => {
   });
 });
 
-/*
-  =========================
-  HEALTH CHECK
-  =========================
-*/
+
+// ===============================
+// HEALTH CHECK
+// ===============================
 
 app.get("/api/health", (req, res) => {
   res.status(200).json({
@@ -124,31 +120,23 @@ app.get("/api/health", (req, res) => {
   });
 });
 
-/*
-  =========================
-  ERROR HANDLER
-  =========================
-*/
+
+// ===============================
+// ERROR HANDLER
+// ===============================
 
 app.use((err, req, res, next) => {
   console.error("SERVER ERROR:", err.message);
-
-  if (err.message === "Not allowed by CORS") {
-    return res.status(403).json({
-      message: "CORS error: Origin not allowed"
-    });
-  }
 
   res.status(500).json({
     message: "Internal server error"
   });
 });
 
-/*
-  =========================
-  LOCAL SERVER
-  =========================
-*/
+
+// ===============================
+// LOCAL SERVER
+// ===============================
 
 const PORT = process.env.PORT || 5000;
 
@@ -159,5 +147,10 @@ if (process.env.NODE_ENV !== "production") {
     );
   });
 }
+
+
+// ===============================
+// VERCEL EXPORT
+// ===============================
 
 module.exports = app;
